@@ -115,7 +115,13 @@
 
         <!-- 抽獎記錄 -->
         <div class="records-section" v-if="drawRecords.length > 0">
-          <h2>📋 抽獎記錄</h2>
+          <div class="record-header">
+            <h2>抽獎記錄</h2>
+            <div class="record-buttons">
+              <button @click="downloadRecords" class="download-btn">下載表格</button>
+              
+            </div>
+          </div>
           <!-- 使用表格顯示抽獎記錄 -->
           <table class="records-table">
             <thead>
@@ -137,11 +143,9 @@
               </tr>
             </tbody>
           </table>
-          <div class="record-buttons">
-            <button @click="clearRecords" class="clear-btn">清除記錄</button>
-            <button @click="resetAll" class="reset-btn">重置抽獎</button>
-          </div>
         </div>
+        <button @click="clearRecords" class="clear-btn">清除記錄</button>
+        <button @click="resetAll" class="reset-btn">重置抽獎</button>
       </div>
 
       <!-- 載入中 -->
@@ -561,6 +565,38 @@ const resetAll = () => {
   if (confirm('確定要重置所有抽獎嗎？這將清空所有記錄並重新開始。')) {
     resetAllRecords()
   }
+}
+
+/**
+ * 下載抽獎紀錄為CSV檔案
+ * @returns {void}
+ */
+const downloadRecords = () => {
+  if (!drawRecords.value.length) return
+  // 欄位標題
+  const headers = ['抽獎者ID', '獎項', '獎品名稱', '卡號', '抽獎時間']
+  // 內容
+  const rows = drawRecords.value.map(record => [
+    record.playerId,
+    getPrizeLabelByName(record.prize),
+    record.prize,
+    `#${record.cardNumber}`,
+    formatTime(record.timestamp)
+  ])
+  // 轉成CSV字串，前面加上UTF-8 BOM
+  const csvContent = '\uFEFF' + [headers, ...rows]
+    .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+    .join('\r\n')
+  // 下載
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `lottery_${lotteryId}_records.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 /**
@@ -1111,6 +1147,20 @@ const goToSetup = () => {
 
 .reset-btn:hover {
   background: #c82333;
+}
+
+.download-btn {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.download-btn:hover {
+  background: #125ea6;
 }
 
 .loading {
@@ -1672,5 +1722,24 @@ const goToSetup = () => {
 }
 .records-table tr:hover {
   background: #e3f2fd;
+}
+
+/* 抽獎記錄區塊標題與按鈕排版 */
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+.record-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+.record-buttons {
+  display: flex;
+  gap: 12px;
 }
 </style> 
