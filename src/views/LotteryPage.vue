@@ -10,8 +10,10 @@
 
       <!-- 抽獎內容 -->
       <div v-else-if="lotteryData" class="lottery-content">
-        <!-- 抽獎者輸入區域 -->
-
+        <!-- 抽獎標題 -->
+        <div class="lottery-header" v-if="lotteryData.title">
+          <h1 class="lottery-title">{{ lotteryData.title }}</h1>
+        </div>
 
         <!-- 主要抽獎區域 -->
         <div class="main-lottery-area">
@@ -40,16 +42,19 @@
           <div class="prize-info-section">
             <h2>🏆 獎項資訊</h2>
             <div class="prize-list">
-              <div 
-                v-for="prize in lotteryData.prizes" 
-                :key="prize.name"
-                class="prize-item"
-              >
-                <div class="prize-name">{{ prize.name }}</div>
-                <div class="prize-count">
-                  <span class="remaining">{{ getRemainingCount(prize.name) }}</span>
-                  <span class="total">/ {{ prize.quantity }}</span>
-                  <span class="percentage">({{ getPercentage(prize.name, remainingCards) }}%)</span>
+              <div class="prize-card-list">
+                <div
+                  class="prize-info-card"
+                  v-for="(prize, index) in lotteryData.prizes"
+                  :key="prize.name"
+                >
+                  <div class="prize-row">
+                    <div class="prize-name">{{ getPrizeLabel(index) }}</div>
+                    <div class="prize-label">{{ prize.name }}</div>
+                    <div class="prize-meta">
+                      <span class="prize-count-large">{{ getRemainingCount(prize.name) }}<span class="prize-meta-divider">/</span>{{ prize.quantity }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,20 +116,27 @@
         <!-- 抽獎記錄 -->
         <div class="records-section" v-if="drawRecords.length > 0">
           <h2>📋 抽獎記錄</h2>
-          <div class="records-list">
-            <div 
-              v-for="(record, index) in drawRecords" 
-              :key="index"
-              class="record-item"
-            >
-              <div class="record-info">
-                <span class="player-id">{{ record.playerId }}</span>
-                <span class="prize-name">{{ record.prize }}</span>
-                <span class="card-number">#{{ record.cardNumber }}</span>
-              </div>
-              <div class="record-time">{{ formatTime(record.timestamp) }}</div>
-            </div>
-          </div>
+          <!-- 使用表格顯示抽獎記錄 -->
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>抽獎者 ID</th>
+                <th>獎項</th>
+                <th style="width: 400px;">獎品名稱</th>
+                <th>卡號</th>
+                <th>抽獎時間</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(record, index) in drawRecords" :key="index">
+                <td>{{ record.playerId }}</td>
+                <td>{{ getPrizeLabelByName(record.prize) }}</td>
+                <td>{{ record.prize }}</td>
+                <td>#{{ record.cardNumber }}</td>
+                <td>{{ formatTime(record.timestamp) }}</td>
+              </tr>
+            </tbody>
+          </table>
           <div class="record-buttons">
             <button @click="clearRecords" class="clear-btn">清除記錄</button>
             <button @click="resetAll" class="reset-btn">重置抽獎</button>
@@ -290,6 +302,13 @@ const loadLotteryData = () => {
     }
 
     lotteryData.value = JSON.parse(storedData)
+    
+    // 設定動態 CSS 變數
+    if (lotteryData.value.primaryColor && lotteryData.value.secondaryColor) {
+      document.documentElement.style.setProperty('--primary-color', lotteryData.value.primaryColor)
+      document.documentElement.style.setProperty('--secondary-color', lotteryData.value.secondaryColor)
+    }
+    
     generateCards()
     loadRecords()
   } catch (err) {
@@ -618,6 +637,45 @@ const getConfettiStyle = (index) => {
 }
 
 /**
+ * 根據索引取得獎項標籤（A賞、B賞...）
+ * @param {number} index - 獎項索引
+ * @returns {string} - 標籤
+ */
+const getPrizeLabel = (index) => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  if (index < 26) {
+    return `${alphabet[index]}賞`
+  }
+  const first = Math.floor(index / 26) - 1
+  const second = index % 26
+  return `${alphabet[first]}${alphabet[second]}賞`
+}
+
+/**
+ * 根據獎項名稱取得獎項標籤（A賞、B賞...）
+ * @param {string} prizeName - 獎項名稱
+ * @returns {string} - 標籤
+ */
+const getPrizeLabelByName = (prizeName) => {
+  if (!lotteryData.value || !lotteryData.value.prizes) return ''
+  const index = lotteryData.value.prizes.findIndex(prize => prize.name === prizeName)
+  if (index === -1) return ''
+  return getPrizeLabel(index)
+}
+
+/**
+ * 計算獎項剩餘機率（百分比字串）
+ * @param {number} remaining - 剩餘數量
+ * @param {number} total - 剩餘總數
+ * @returns {string} - 百分比（兩位小數）
+ */
+const getPrizeProbability = (remaining, total) => {
+  if (!total || remaining === 0) return '0%'
+  const percent = (remaining / total) * 100
+  return percent.toFixed(2) + '%'
+}
+
+/**
  * 回到設定頁面
  */
 const goToSetup = () => {
@@ -635,16 +693,16 @@ const goToSetup = () => {
 }
 
 .lottery-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: var(--primary-color, #667eea);
   text-align: center;
   padding: 30px 20px;
 }
 
-.lottery-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+.lottery-title {
+  font-size: 3rem;
+  margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
 }
 
 .lottery-header p {
@@ -819,7 +877,7 @@ const goToSetup = () => {
 
 .card {
   aspect-ratio: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color, #667eea) 0%, var(--secondary-color, #764ba2) 100%);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -1205,7 +1263,7 @@ const goToSetup = () => {
 }
 
 #Awesome.peeled .back .rectangle{
-	margin-left: -50px;
+	margin-left: -10px;
 }
 
 #Awesome .front{
@@ -1222,11 +1280,11 @@ const goToSetup = () => {
 
 #Awesome .front .rectangle{
 	margin-left: 0px;
-	background: #fbec3f;
+	background: var(--primary-color, #667eea);
 
-	background-image: -webkit-linear-gradient(right, rgba(251,236,63,.0) 75%, #f7bb37 95%);
-  background-image: -moz-linear-gradient(right, rgba(251,236,63,.0) 75%, #f7bb37 95%);
-  background-image: linear-gradient(right, rgba(251,236,63,.0) 75%, #f7bb37 95%);
+	background-image: -webkit-linear-gradient(right, rgba(251,236,63,.0) 75%, var(--primary-color, #667eea) 95%);
+  background-image: -moz-linear-gradient(right, rgba(251,236,63,.0) 75%, var(--primary-color, #667eea) 95%);
+  background-image: linear-gradient(right, rgba(251,236,63,.0) 75%, var(--primary-color, #667eea) 95%);
 }
 
 #Awesome h4{
@@ -1495,5 +1553,124 @@ const goToSetup = () => {
     padding: 20px 40px;
     font-size: 18px;
   }
+}
+
+.prize-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+.prize-table th, .prize-table td {
+  border: 1px solid #dee2e6;
+  padding: 10px 8px;
+  text-align: center;
+}
+.prize-table th {
+  background: #f1f3f4;
+  color: #495057;
+  font-weight: 600;
+}
+
+.prize-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.prize-info-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 20px 24px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 2px solid #f1f3f4;
+  transition: box-shadow 0.2s;
+}
+.prize-info-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  border-color: #b3b7ff;
+}
+.prize-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 10px;
+}
+.prize-meta {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  font-size: 0.98rem;
+  color: #495057;
+}
+.prize-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0;
+}
+.prize-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 0;
+  flex: 1 1 0;
+  text-align: left;
+}
+.prize-meta {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  font-size: 0.98rem;
+  color: #495057;
+  flex: 1 1 0;
+  justify-content: right;
+}
+.prize-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #34495e;
+  flex: 1 1 0;
+  text-align: center;
+}
+.prize-meta-divider {
+  margin: 0 2px;
+  color: #adb5bd;
+}
+.prize-count-large {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #222;
+}
+
+/* 抽獎記錄表格樣式 */
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.records-table th, .records-table td {
+  border: 1px solid #e9ecef;
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 1rem;
+}
+.records-table th {
+  background: #f1f3f4;
+  color: #495057;
+  font-weight: 600;
+}
+.records-table tr:nth-child(even) {
+  background: #f8f9fa;
+}
+.records-table tr:hover {
+  background: #e3f2fd;
 }
 </style> 

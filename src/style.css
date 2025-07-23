@@ -21,7 +21,6 @@ html, body {
   width: 100%;
   max-width: 1920px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
 }
 
@@ -52,12 +51,7 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #667eea;
   border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #5a6fd8;
 }
 
 /* 全域按鈕樣式 */

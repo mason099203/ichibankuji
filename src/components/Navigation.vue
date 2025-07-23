@@ -2,12 +2,10 @@
   <nav class="navigation">
     <div class="nav-container">
       <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-        🎁 設定頁面
+        設定頁面
       </router-link>
       <div class="nav-divider"></div>
-      <span class="nav-info">
-        {{ currentPageInfo }}
-      </span>
+
     </div>
   </nav>
 </template>
@@ -18,17 +16,6 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
-/**
- * 當前頁面資訊
- */
-const currentPageInfo = computed(() => {
-  if (route.path === '/') {
-    return '設定獎項和生成抽獎頁面'
-  } else if (route.path.startsWith('/lottery/')) {
-    return `抽獎頁面 - ID: ${route.params.lotteryId}`
-  }
-  return ''
-})
 </script>
 
 <style scoped>
