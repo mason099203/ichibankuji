@@ -52,8 +52,8 @@ const route = useRoute()
 }
 
 .nav-link.active {
-  background: #667eea;
-  color: white;
+  color: rgb(0, 0, 0);
+  border: 1px solid #667eea;
 }
 
 .nav-divider {

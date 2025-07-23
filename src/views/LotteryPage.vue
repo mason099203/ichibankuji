@@ -76,9 +76,9 @@
                   <label class="checkbox-label">
                     <input 
                       type="checkbox" 
-                      v-model="skipConfirmation"
+                      v-model="skipAnimation"
                     />
-                    <span>跳過確認</span>
+                    <span>跳過動畫</span>
                   </label>
                   <label class="checkbox-label">
                     <input 
@@ -100,16 +100,7 @@
               </div>
             </div>
 
-            <!-- 抽獎按鈕 -->
-            <div class="draw-section" v-if="selectedCardIndex !== null && currentPlayerId.trim()">
-              <div class="selected-card-info">
-                <p>已選擇: 第 {{ cards[selectedCardIndex].number }} 號牌</p>
-                <p>抽獎者: {{ currentPlayerId }}</p>
-              </div>
-              <button @click="drawCard" class="draw-btn">
-                🎲 確認抽獎
-              </button>
-            </div>
+
           </div>
         </div>
 
@@ -231,7 +222,7 @@ const drawRecords = ref([])
 /**
  * 快速抽獎選項
  */
-const skipConfirmation = ref(false)
+const skipAnimation = ref(false)
 const autoSelectCard = ref(false)
 
 /**
@@ -427,8 +418,10 @@ const selectCard = (index) => {
   
   selectedCardIndex.value = index
   
-  // 如果啟用跳過確認，直接抽獎
-  if (skipConfirmation.value) {
+  // 選到卡片時直接抽獎，根據跳過動畫選項
+  if (skipAnimation.value) {
+    drawCard({ skipAnimation: true })
+  } else {
     drawCard()
   }
 }
@@ -441,7 +434,6 @@ const quickDraw = () => {
     alert('請輸入抽獎者 ID')
     return
   }
-  
   // 如果啟用自動選號，隨機選擇一張未抽的卡片
   if (autoSelectCard.value) {
     const availableCards = cards.value.filter(card => !card.isDrawn)
@@ -453,41 +445,30 @@ const quickDraw = () => {
     const randomCard = availableCards[randomIndex]
     selectedCardIndex.value = cards.value.findIndex(card => card.number === randomCard.number)
   }
-  
   // 如果沒有選擇卡片，提示選擇
   if (selectedCardIndex.value === null) {
     alert('請選擇一張抽獎牌')
     return
   }
-  
-  // 如果跳過確認，直接抽獎
-  if (skipConfirmation.value) {
-    drawCard()
-  } else {
-    // 否則顯示確認對話框
-    const selectedCard = cards.value[selectedCardIndex.value]
-    if (confirm(`確認 ${currentPlayerId.value} 要抽第 ${selectedCard.number} 號牌嗎？`)) {
-      drawCard()
-    }
-  }
+  // 只要勾選跳過動畫就直接跳過動畫
+  drawCard({ skipAnimation: skipAnimation.value || (autoSelectCard.value && skipAnimation.value) })
 }
 
 /**
  * 抽獎
+ * @param {Object} [options] - 選項
+ * @param {boolean} [options.skipAnimation] - 是否跳過動畫
  */
-const drawCard = () => {
+const drawCard = (options = {}) => {
   if (!currentPlayerId.value.trim()) {
     alert('請輸入抽獎者 ID')
     return
   }
-  
   if (selectedCardIndex.value === null) {
     alert('請選擇一張抽獎牌')
     return
   }
-  
   const selectedCard = cards.value[selectedCardIndex.value]
-  
   // 記錄抽獎結果
   const record = {
     playerId: currentPlayerId.value.trim(),
@@ -495,25 +476,21 @@ const drawCard = () => {
     cardNumber: selectedCard.number,
     timestamp: new Date()
   }
-  
   drawRecords.value.unshift(record)
   saveRecords()
-  
   // 標記為已抽
   selectedCard.isDrawn = true
-  
   // 保存卡片狀態
   localStorage.setItem(`cards_${lotteryId}`, JSON.stringify(cards.value))
-  
   // 清空選擇和抽獎者
   selectedCardIndex.value = null
-  currentPlayerId.value = ''
-  
-  // 顯示抽獎結果動畫
+  // 顯示抽獎結果動畫（除非skipAnimation為true）
   lastDrawResult.value = record
-  showResultAnimation.value = true
-  // 初始化撕開效果
-  initPeelEffect()
+  if (!options.skipAnimation) {
+    showResultAnimation.value = true
+    // 初始化撕開效果
+    initPeelEffect()
+  }
 }
 
 /**
