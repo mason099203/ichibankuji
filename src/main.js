@@ -1,5 +1,19 @@
 import { createApp } from 'vue'
-import './style.css'
 import App from './App.vue'
+import router from './router'
+import './style.css'
 
-createApp(App).mount('#app')
+/**
+ * 建立 Vue 應用實例
+ */
+const app = createApp(App)
+
+/**
+ * 使用路由
+ */
+app.use(router)
+
+/**
+ * 掛載應用
+ */
+app.mount('#app')

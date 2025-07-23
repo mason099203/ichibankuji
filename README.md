@@ -1,5 +1,98 @@
-# Vue 3 + Vite
+# 🎰 抽獎系統
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+一個類似一翻賞的線上抽獎系統，支援獎項設定、URL 分享和抽獎記錄功能。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## ✨ 功能特色
+
+### 🎁 設定頁面
+- 自定義獎項名稱和數量
+- 即時預覽總抽獎牌數量
+- 生成唯一的抽獎頁面 URL
+- 一鍵複製分享連結
+
+### 🎯 抽獎頁面
+- 直觀的抽獎牌網格顯示
+- 即時顯示獎項剩餘數量
+- 抽獎者 ID 輸入功能
+- 完整的抽獎記錄追蹤
+- 響應式設計，支援手機瀏覽
+
+### 📋 記錄功能
+- 詳細的抽獎記錄（時間、抽獎者、獎項、牌號）
+- 記錄持久化儲存
+- 一鍵清除記錄功能
+
+## 🚀 快速開始
+
+### 安裝依賴
+```bash
+npm install
+```
+
+### 啟動開發伺服器
+```bash
+npm run dev
+```
+
+### 建置生產版本
+```bash
+npm run build
+```
+
+## 📖 使用說明
+
+### 1. 設定獎項
+1. 開啟設定頁面 (`/`)
+2. 輸入獎項名稱（如：特獎、頭獎、二獎）
+3. 設定每個獎項的數量
+4. 點擊「新增獎項」按鈕
+5. 重複步驟 2-4 直到所有獎項設定完成
+
+### 2. 生成抽獎頁面
+1. 設定完成後，點擊「生成抽獎頁面」按鈕
+2. 系統會生成唯一的抽獎 ID 和 URL
+3. 複製連結分享給其他人
+
+### 3. 進行抽獎
+1. 開啟抽獎頁面連結
+2. 輸入抽獎者 ID 或姓名
+3. 點擊選擇一張抽獎牌
+4. 確認抽獎結果
+5. 查看抽獎記錄
+
+## 🔧 技術架構
+
+- **前端框架**: Vue 3 (Composition API)
+- **路由管理**: Vue Router 4
+- **樣式**: CSS3 + 響應式設計
+- **資料儲存**: LocalStorage
+- **建置工具**: Vite
+
+## 📱 響應式設計
+
+系統支援各種螢幕尺寸：
+- 桌面版：完整功能展示
+- 平板版：自適應佈局
+- 手機版：優化觸控體驗
+
+## 🎨 設計特色
+
+- 現代化的漸層背景設計
+- 直觀的卡片式抽獎介面
+- 清晰的視覺回饋效果
+- 一致的色彩主題
+
+## 📝 注意事項
+
+- 抽獎資料儲存在瀏覽器的 LocalStorage 中
+- 清除瀏覽器資料會導致抽獎記錄遺失
+- 建議定期備份重要的抽獎記錄
+- 每個抽獎活動都有唯一的 ID，確保資料隔離
+
+## 🤝 貢獻
+
+歡迎提交 Issue 和 Pull Request 來改善這個專案！
+
+## 📄 授權
+
+MIT License
