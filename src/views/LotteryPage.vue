@@ -13,14 +13,14 @@
         <!-- 抽獎標題 -->
         <div class="lottery-header" v-if="lotteryData.title">
           <h1 class="lottery-title">{{ lotteryData.title }}</h1>
+          <h4>剩餘 {{ remainingCards }} 張 </h4>
+
         </div>
 
         <!-- 主要抽獎區域 -->
         <div class="main-lottery-area">
           <!-- 左側：抽獎牌網格 -->
           <div class="cards-section">
-            <h2>🎯 抽獎牌 ({{ remainingCards }} 張剩餘) 
-            </h2>
             <div class="cards-grid" :class="gridSizeClass">
               <div 
                 v-for="(card, index) in cards" 
@@ -40,8 +40,9 @@
 
           <!-- 右側：獎項資訊 -->
           <div class="prize-info-section">
-            <h2>🏆 獎項資訊</h2>
             <div class="prize-list">
+            <h2>獎項資訊</h2>
+
               <div class="prize-card-list">
                 <div
                   class="prize-info-card"
@@ -162,8 +163,15 @@
 	
           <div class="reveal rectangle_wrapper">
             <div class="rectangle">
-              <h2>恭喜中獎！</h2>
-              <p>抽中 {{ lastDrawResult.prize }}！</p>
+              <div class="prize-display">
+                <div class="prize-label">
+                  <span class="prize-letter">{{ getPrizeLabelByName(lastDrawResult.prize).replace('賞', '') }}</span>
+                  <span class="prize-text">賞</span>
+                </div>
+                <div class="prize-info">
+                  {{ lastDrawResult.prize }}
+                </div>
+              </div>
             </div>
           </div>
                     
@@ -307,6 +315,8 @@ const loadLotteryData = () => {
     
     generateCards()
     loadRecords()
+    // 調整獎品名稱字體大小
+    adjustPrizeLabelsFontSize()
   } catch (err) {
     error.value = '載入抽獎資料時發生錯誤'
     console.error(err)
@@ -491,6 +501,8 @@ const drawCard = (options = {}) => {
     showResultAnimation.value = true
     // 初始化撕開效果
     initPeelEffect()
+    // 調整字體大小
+    adjustPrizeInfoFontSize()
   }
 }
 
@@ -633,6 +645,62 @@ const closeResultAnimation = () => {
 }
 
 /**
+ * 調整獎品資訊字體大小
+ */
+const adjustPrizeInfoFontSize = () => {
+  nextTick(() => {
+    const prizeInfo = document.querySelector('.prize-info')
+    if (prizeInfo) {
+      const text = prizeInfo.textContent
+      const length = text.length
+      
+      // 根據文字長度動態調整字體大小
+      let fontSize = 1.2
+      if (length > 20) {
+        fontSize = 0.8
+      } else if (length > 15) {
+        fontSize = 0.9
+      } else if (length > 10) {
+        fontSize = 1.0
+      } else {
+        fontSize = 1.2
+      }
+      
+      prizeInfo.style.fontSize = `${fontSize}rem`
+    }
+  })
+}
+
+/**
+ * 調整獎項資訊卡片中的獎品名稱字體大小
+ */
+const adjustPrizeLabelsFontSize = () => {
+  nextTick(() => {
+    const prizeLabels = document.querySelectorAll('.prize-info-section .prize-label')
+    prizeLabels.forEach(label => {
+      const text = label.textContent
+      const length = text.length
+      
+      // 根據文字長度動態調整字體大小
+      let fontSize = 1.1
+      if (length > 25) {
+        fontSize = 0.3
+      } else if (length > 20) {
+        fontSize = 0.5
+      } else if (length > 15) {
+        fontSize = 0.6
+      } else if (length > 10) {
+        fontSize = 0.8
+      } else {
+        fontSize = 1.1
+      }
+      
+      label.style.fontSize = `${fontSize}rem`
+    })
+  })
+}
+
+/**
  * 取得彩帶樣式
  */
 const getConfettiStyle = (index) => {
@@ -714,7 +782,7 @@ const goToSetup = () => {
 
 .lottery-title {
   font-size: 3rem;
-  margin: 0;
+  margin: 10px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   font-weight: bold;
 }
@@ -774,6 +842,7 @@ const goToSetup = () => {
 .player-input label {
   font-weight: 600;
   color: #495057;
+  margin: auto;
 }
 
 .player-input input {
@@ -962,7 +1031,7 @@ const goToSetup = () => {
 .prize-list {
   background: #f8f9fa;
   border-radius: 12px;
-  padding: 20px;
+  padding: 20px 10px 10px 20px;
   margin-bottom: 20px;
 }
 
@@ -1225,8 +1294,6 @@ const goToSetup = () => {
 }
 
 #Awesome .reveal .rectangle{
-	box-shadow: 0 1px 0px rgba(0,0,0,.15);
-  
   font-family: 'helvetica neue', arial;
   font-weight: 200;
   text-align: center;
@@ -1238,20 +1305,84 @@ const goToSetup = () => {
   cursor: pointer;
 }
 
-#Awesome .reveal .rectangle h2 {
-  margin: 0 0 10px 0;
-  font-size: 1.8rem;
-  color: #333;
+.prize-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 20px;
 }
 
-#Awesome .reveal .rectangle p {
-  margin: 0;
-  font-size: 1.2rem;
-  color: #666;
+.prize-label {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.prize-letter {
+  font-size: 80px;
+  font-weight: bold;
+  color: hsl(0, 0%, 75%);
+}
+
+.prize-text {
+  font-size: 1rem;
+  color: hsl(0, 0%, 75%);
+}
+
+.prize-info {
+  background-color: hsl(0, 0%, 100%);
+  color: hsl(0, 0%, 40%);
+  padding: 8px 12px;
+  margin-left: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  width: 180px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+  word-wrap: break-word;
+  overflow: hidden;
 }
 
 #Awesome .reveal .rectangle{
-	background: #fafafa;
+	background: hsl(0, 0%, 10%);
+	position: relative;
+}
+
+#Awesome .reveal .rectangle::before,
+#Awesome .reveal .rectangle::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 20px;
+	
+}
+
+#Awesome .reveal .rectangle::before {
+	top: 0;
+	border-top-left-radius: 12px;
+	border-top-right-radius: 12px;
+  background:  hsl(234, 61%, 49%);
+}
+
+#Awesome .reveal .rectangle::before::before {
+	top: 10px;
+	border-top-left-radius: 12px;
+	border-top-right-radius: 12px;
+  background:  hsl(0, 0%, 85%);
+}
+
+#Awesome .reveal .rectangle::after {
+	bottom: 0;
+	border-bottom-left-radius: 12px;
+	border-bottom-right-radius: 12px;
+  background:   hsl(234, 47%, 64%);
 }
 
 #Awesome .rectangle_wrapper{
@@ -1285,7 +1416,7 @@ const goToSetup = () => {
 #Awesome .back .rectangle{
 	margin-left: -500px;
   right: -10px;
-	background-color: #14a739;
+	background-color: #242427;
 
 	background-image: -webkit-linear-gradient(right, rgba(251,236,63,.0), rgba(255,255,255,.8));
 }
@@ -1602,14 +1733,14 @@ const goToSetup = () => {
 .prize-card-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   margin-bottom: 16px;
 }
 .prize-info-card {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  padding: 20px 24px;
+  padding: 10px 24px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -1631,8 +1762,7 @@ const goToSetup = () => {
   display: flex;
   flex-direction: row;
   gap: 12px;
-  font-size: 0.98rem;
-  color: #495057;
+  font-size: 0.9rem;
 }
 .prize-row {
   display: flex;
@@ -1640,12 +1770,23 @@ const goToSetup = () => {
   width: 100%;
   gap: 0;
 }
+
+.prize-row .prize-name {
+  flex: 2;
+}
+
+.prize-row .prize-label {
+  flex: 5;
+}
+
+.prize-row .prize-meta {
+  flex: 2;
+}
 .prize-name {
   font-size: 1.2rem;
   font-weight: bold;
   color: #667eea;
   margin-bottom: 0;
-  flex: 1 1 0;
   text-align: left;
 }
 .prize-meta {
@@ -1663,6 +1804,10 @@ const goToSetup = () => {
   color: #34495e;
   flex: 1 1 0;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 .prize-meta-divider {
   margin: 0 2px;
@@ -1671,7 +1816,7 @@ const goToSetup = () => {
 .prize-count-large {
   font-size: 0.8rem;
   font-weight: bold;
-  color: #222;
+  color: #797979;
 }
 
 /* 抽獎記錄表格樣式 */

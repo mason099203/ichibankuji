@@ -119,7 +119,7 @@
             <thead>
               <tr>
                 <th>獎項</th>
-                <th>名稱</th>
+                <th>獎項名稱</th>
                 <th>數量</th>
                 <th>操作</th>
               </tr>

@@ -93,6 +93,3 @@ npm run build
 
 歡迎提交 Issue 和 Pull Request 來改善這個專案！
 
-## 📄 授權
-
-MIT License
