@@ -777,7 +777,7 @@ const goToSetup = () => {
 .lottery-header {
   color: var(--primary-color, #667eea);
   text-align: center;
-  padding: 30px 20px;
+  padding: 10px 20px;
 }
 
 .lottery-title {
