@@ -208,10 +208,26 @@ const route = useRoute()
 const router = useRouter()
 
 /**
- * 取得查詢參數中的 lotteryId
+ * 取得查詢參數中的編碼資料
  * @type {string}
  */
-const lotteryId = route.query.id
+const encodedData = route.query.data
+
+/**
+ * 生成基於資料內容的唯一標識符
+ * @type {string}
+ */
+const lotteryId = computed(() => {
+  if (!encodedData) return ''
+  // 使用編碼資料的雜湊作為唯一標識符
+  let hash = 0
+  for (let i = 0; i < encodedData.length; i++) {
+    const char = encodedData.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // 轉換為 32 位整數
+  }
+  return Math.abs(hash).toString(36)
+})
 
 /**
  * 頁面狀態
@@ -299,13 +315,14 @@ onMounted(() => {
  */
 const loadLotteryData = () => {
   try {
-    const storedData = localStorage.getItem(`lottery_${lotteryId}`)
-    if (!storedData) {
-      error.value = '找不到此抽獎活動，可能已被刪除或 ID 錯誤'
+    if (!encodedData) {
+      error.value = '缺少抽獎資料參數'
       return
     }
 
-    lotteryData.value = JSON.parse(storedData)
+    // 解碼 Base64 資料，支援 Unicode 字符
+    const decodedData = decodeURIComponent(escape(atob(encodedData)))
+    lotteryData.value = JSON.parse(decodedData)
     
     // 設定動態 CSS 變數
     if (lotteryData.value.primaryColor && lotteryData.value.secondaryColor) {
@@ -329,10 +346,10 @@ const loadLotteryData = () => {
 const resetAllRecords = () => {
   // 清空抽獎記錄
   drawRecords.value = []
-  localStorage.removeItem(`records_${lotteryId}`)
+  localStorage.removeItem(`records_${lotteryId.value}`)
   
   // 清空卡片分配，讓下次重新生成
-  localStorage.removeItem(`cards_${lotteryId}`)
+  localStorage.removeItem(`cards_${lotteryId.value}`)
   
   // 重置卡片狀態
   cards.value.forEach(card => {
@@ -345,7 +362,7 @@ const resetAllRecords = () => {
  */
 const generateCards = () => {
   // 檢查是否已有保存的卡片分配
-  const savedCards = localStorage.getItem(`cards_${lotteryId}`)
+  const savedCards = localStorage.getItem(`cards_${lotteryId.value}`)
   
   if (savedCards) {
     // 如果有保存的分配，使用保存的
@@ -376,7 +393,7 @@ const generateCards = () => {
     })
     
     // 保存卡片分配
-    localStorage.setItem(`cards_${lotteryId}`, JSON.stringify(cards.value))
+    localStorage.setItem(`cards_${lotteryId.value}`, JSON.stringify(cards.value))
   }
 }
 
@@ -384,7 +401,7 @@ const generateCards = () => {
  * 載入抽獎記錄
  */
 const loadRecords = () => {
-  const storedRecords = localStorage.getItem(`records_${lotteryId}`)
+  const storedRecords = localStorage.getItem(`records_${lotteryId.value}`)
   if (storedRecords) {
     drawRecords.value = JSON.parse(storedRecords)
     // 根據記錄更新卡片狀態
@@ -403,14 +420,14 @@ const updateCardsFromRecords = () => {
     }
   })
   // 保存更新後的卡片狀態
-  localStorage.setItem(`cards_${lotteryId}`, JSON.stringify(cards.value))
+  localStorage.setItem(`cards_${lotteryId.value}`, JSON.stringify(cards.value))
 }
 
 /**
  * 儲存抽獎記錄
  */
 const saveRecords = () => {
-  localStorage.setItem(`records_${lotteryId}`, JSON.stringify(drawRecords.value))
+  localStorage.setItem(`records_${lotteryId.value}`, JSON.stringify(drawRecords.value))
 }
 
 /**
@@ -492,7 +509,7 @@ const drawCard = (options = {}) => {
   // 標記為已抽
   selectedCard.isDrawn = true
   // 保存卡片狀態
-  localStorage.setItem(`cards_${lotteryId}`, JSON.stringify(cards.value))
+  localStorage.setItem(`cards_${lotteryId.value}`, JSON.stringify(cards.value))
   // 清空選擇和抽獎者
   selectedCardIndex.value = null
   // 顯示抽獎結果動畫（除非skipAnimation為true）
@@ -582,7 +599,7 @@ const downloadRecords = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `lottery_${lotteryId}_records.csv`
+  a.download = `lottery_${lotteryId.value}_records.csv`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

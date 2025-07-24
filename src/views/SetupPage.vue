@@ -282,12 +282,8 @@ const generateLottery = async () => {
     return
   }
 
-  // 生成唯一的抽獎 ID
-  const lotteryId = await generateLotteryId()
-  
-  // 將獎項資料儲存到 localStorage
+  // 準備抽獎資料
   const lotteryData = {
-    id: lotteryId,
     title: lotteryTitle.value.trim() || '抽獎大會',
     primaryColor: primaryColor.value,
     secondaryColor: secondaryColor.value,
@@ -296,60 +292,18 @@ const generateLottery = async () => {
     createdAt: new Date().toISOString()
   }
   
-  localStorage.setItem(`lottery_${lotteryId}`, JSON.stringify(lotteryData))
+  // 將資料編碼為 Base64 字符串，支援 Unicode 字符
+  const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(lotteryData))))
   
-  // 生成 URL
+  // 生成 URL 包含編碼後的資料
   /**
-   * 產生查詢參數格式的抽獎頁面連結
-   * @example https://xxx/ichibankuji/lottery?id=xxxx
+   * 產生包含編碼資料的抽獎頁面連結
+   * @example https://xxx/ichibankuji/lottery?data=xxxx
    */
-  lotteryUrl.value = `${window.location.origin}/ichibankuji/lottery?id=${lotteryId}`
+  lotteryUrl.value = `${window.location.origin}/ichibankuji/lottery?data=${encodeURIComponent(encodedData)}`
 }
 
-/**
- * 生成唯一的抽獎 ID (50位數)
- */
-const generateLotteryId = async () => {
-  // 使用時間戳 + 隨機數生成 50 位數 ID
-  const timestamp = Date.now().toString(36).padStart(10, '0')
-  
-  // 生成 40 位隨機字符
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-  let randomPart = ''
-  
-  // 使用多個隨機源確保唯一性
-  for (let i = 0; i < 40; i++) {
-    const randomIndex = Math.floor(Math.random() * chars.length)
-    randomPart += chars[randomIndex]
-  }
-  
-  // 組合：10位時間戳 + 40位隨機字符 = 50位
-  return timestamp + randomPart
-}
 
-/**
- * 生成更安全的抽獎 ID (50位數) - 使用 Web Crypto API
- */
-const generateSecureLotteryId = async () => {
-  try {
-    // 使用 Web Crypto API 生成更安全的隨機數
-    const array = new Uint8Array(25) // 25 bytes = 50 characters (base36)
-    crypto.getRandomValues(array)
-    
-    // 轉換為 base36 字符串
-    let result = ''
-    for (let i = 0; i < array.length; i++) {
-      result += array[i].toString(36).padStart(2, '0')
-    }
-    
-    // 確保長度為 50 位
-    return result.substring(0, 50).padEnd(50, '0')
-  } catch (error) {
-    // 降級到標準方法
-    console.warn('Web Crypto API 不可用，使用標準隨機數生成')
-    return generateLotteryId()
-  }
-}
 
 /**
  * 複製 URL
