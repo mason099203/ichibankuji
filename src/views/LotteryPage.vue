@@ -179,14 +179,16 @@
           </div>
                     
           <div class="sticky anim750">
+
             <div class="front rectangle_wrapper anim750">
               <div class="rectangle anim750"></div>
+              <div class="drag-arrow"><i class="bi bi-caret-right-fill arrow"></i></div>
+
             </div>
           </div>
           
-          <h4>點擊並拖曳往右撕開！</h4>
           <div class="drag-indicator">
-            <span>← 拖曳往右 →</span>
+            <span>拖曳往右 →</span>
             <div class="mobile-hint">手機：滑動往右</div>
           </div>
                     
@@ -1372,7 +1374,7 @@ const goToSetup = () => {
   margin-left: 10px;
   border-radius: 6px;
   font-weight: 500;
-  width: 180px;
+  width: 120px;
   height: 60px;
   display: flex;
   align-items: center;
@@ -1481,13 +1483,13 @@ const goToSetup = () => {
   background-image: linear-gradient(right, rgba(251,236,63,.0) 75%, var(--primary-color, #667eea) 95%);
 }
 
-#Awesome h4{
+#Awesome .arrow{
   font-family: 'helvetica neue', arial;
   font-weight: 200;
   text-align: center;
 	position: absolute;
 	width: 300px;
-	height: 160px;
+	height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1538,6 +1540,37 @@ const goToSetup = () => {
   }
   50% {
     opacity: 1;
+  }
+}
+
+/* 拖曳箭頭動畫 */
+.drag-arrow {
+  display: flex;
+  gap: 8px;
+  font-family: 'helvetica neue', arial;
+  font-weight: 200;
+  position: absolute;
+  width: 300px;
+  height: 200px;
+  display: flex;
+  transition: opacity 50ms linear 400ms;
+}
+
+.drag-arrow .arrow {
+  font-size: 2.8rem;
+  font-weight: bold;
+  animation: arrowMove 1.5s ease-in-out infinite;
+  color: #d1d1d1;
+}
+
+@keyframes arrowMove {
+  from{
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to{
+    transform: translateX(30px);
+    opacity: 0;
   }
 }
 
