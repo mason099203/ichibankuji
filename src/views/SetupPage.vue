@@ -299,7 +299,11 @@ const generateLottery = async () => {
   localStorage.setItem(`lottery_${lotteryId}`, JSON.stringify(lotteryData))
   
   // 生成 URL
-  lotteryUrl.value = `${window.location.origin}/ichibankuji/lottery/${lotteryId}`
+  /**
+   * 產生查詢參數格式的抽獎頁面連結
+   * @example https://xxx/ichibankuji/lottery?id=xxxx
+   */
+  lotteryUrl.value = `${window.location.origin}/ichibankuji/lottery?id=${lotteryId}`
 }
 
 /**

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="0; URL=./index.html">
+    <script>
+      // 將當前的 path 轉交給 Vue Router 處理
+      const redirectTo = location.pathname + location.search + location.hash;
+      sessionStorage.redirect = redirectTo;
+      window.location.replace('./index.html');
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>

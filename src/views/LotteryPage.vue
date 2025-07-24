@@ -200,9 +200,10 @@ const route = useRoute()
 const router = useRouter()
 
 /**
- * 路由參數
+ * 取得查詢參數中的 lotteryId
+ * @type {string}
  */
-const lotteryId = route.params.lotteryId
+const lotteryId = route.query.id
 
 /**
  * 頁面狀態

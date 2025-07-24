@@ -14,6 +14,15 @@ const app = createApp(App)
 app.use(router)
 
 /**
+ * 處理 404.html 的重導向
+ */
+const redirectPath = sessionStorage.redirect
+if (redirectPath) {
+  sessionStorage.removeItem('redirect')
+  router.replace(redirectPath)
+}
+
+/**
  * 掛載應用
  */
 app.mount('#app')

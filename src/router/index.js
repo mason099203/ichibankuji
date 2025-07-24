@@ -13,10 +13,9 @@ const routes = [
     component: SetupPage
   },
   {
-    path: '/lottery/:lotteryId',
+    path: '/lottery',
     name: 'Lottery',
-    component: LotteryPage,
-    props: true
+    component: LotteryPage
   },
   {
     path: '/:pathMatch(.*)*',
