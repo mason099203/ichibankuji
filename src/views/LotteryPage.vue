@@ -119,19 +119,19 @@
             <thead>
               <tr>
                 <th>抽獎者 ID</th>
-                <th>獎項</th>
+                <th class="prize-column">獎項</th>
                 <th style="width: 400px;">獎品名稱</th>
                 <th>卡號</th>
-                <th>抽獎時間</th>
+                <th class="time-column">抽獎時間</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(record, index) in drawRecords" :key="index">
                 <td>{{ record.playerId }}</td>
-                <td>{{ getPrizeLabelByName(record.prize) }}</td>
+                <td class="prize-column">{{ getPrizeLabelByName(record.prize) }}</td>
                 <td>{{ record.prize }}</td>
                 <td>#{{ record.cardNumber }}</td>
-                <td>{{ formatTime(record.timestamp) }}</td>
+                <td class="time-column">{{ formatTime(record.timestamp) }}</td>
               </tr>
             </tbody>
           </table>
@@ -159,6 +159,9 @@
           @mousemove="onDrag"
           @mouseup="endDrag"
           @mouseleave="endDrag"
+          @touchstart="startDrag"
+          @touchmove="onDrag"
+          @touchend="endDrag"
         >
 	
           <div class="reveal rectangle_wrapper">
@@ -184,6 +187,7 @@
           <h4>點擊並拖曳往右撕開！</h4>
           <div class="drag-indicator">
             <span>← 拖曳往右 →</span>
+            <div class="mobile-hint">手機：滑動往右</div>
           </div>
                     
           <div class="sticky anim750">
@@ -575,7 +579,7 @@ const resetAll = () => {
 }
 
 /**
- * 下載抽獎紀錄為CSV檔案
+ * 下載抽獎記錄為CSV檔案
  * @returns {void}
  */
 const downloadRecords = () => {
@@ -611,8 +615,15 @@ const downloadRecords = () => {
  */
 const startDrag = (event) => {
   isDragging.value = true
-  dragStartX.value = event.clientX
+  // 支援觸控和滑鼠事件
+  const clientX = event.touches ? event.touches[0].clientX : event.clientX
+  dragStartX.value = clientX
   dragDistance.value = 0
+  
+  // 阻止觸控事件的預設行為，防止頁面滾動
+  if (event.touches) {
+    event.preventDefault()
+  }
 }
 
 /**
@@ -621,8 +632,14 @@ const startDrag = (event) => {
 const onDrag = (event) => {
   if (!isDragging.value) return
   
-  const currentX = event.clientX
+  // 支援觸控和滑鼠事件
+  const currentX = event.touches ? event.touches[0].clientX : event.clientX
   dragDistance.value = currentX - dragStartX.value
+  
+  // 阻止觸控事件的預設行為，防止頁面滾動
+  if (event.touches) {
+    event.preventDefault()
+  }
   
   // 如果拖曳距離超過 100px，觸發撕開效果
   if (dragDistance.value > 100) {
@@ -1288,6 +1305,7 @@ const goToSetup = () => {
   backface-visibility: hidden;
   cursor: grab;
   user-select: none;
+  touch-action: none; /* 防止觸控滾動 */
 }
 
 #Awesome:active {
@@ -1498,6 +1516,15 @@ const goToSetup = () => {
   color: #666;
   font-weight: 500;
   animation: pulse 2s ease-in-out infinite;
+  text-align: center;
+}
+
+.mobile-hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 4px;
+  opacity: 0.8;
+  display: none; /* 預設隱藏，只在手機上顯示 */
 }
 
 #Awesome.peeled .drag-indicator {
@@ -1627,50 +1654,6 @@ const goToSetup = () => {
   
   .cards-grid.extra-large-grid {
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  
-  .lottery-content {
-    padding: 20px;
-  }
-  
-  .player-input {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .cards-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  }
-  
-  /* 在手機上進一步調整網格大小 */
-  .cards-grid.small-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  }
-  
-  .cards-grid.medium-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  }
-  
-  .cards-grid.large-grid {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-  }
-  
-  .cards-grid.extra-large-grid {
-    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-  }
-  
-  .record-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .record-info {
-    flex-direction: column;
-    gap: 4px;
   }
 }
 
@@ -1881,5 +1864,82 @@ const goToSetup = () => {
 .record-buttons {
   display: flex;
   gap: 12px;
+}
+
+
+@media (max-width: 768px) {
+  /* 手機版隱藏獎項欄位 */
+  .records-table .prize-column ,.records-table .time-column{
+    display: none;
+  }
+  
+  .lottery-content {
+    padding: 20px;
+  }
+  
+  .drag-indicator span {
+    display: none;
+  }
+  
+  .mobile-hint {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    opacity: 1;
+  }
+  
+  .player-input {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+  
+  /* 在手機上進一步調整網格大小 */
+  .cards-grid.small-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  
+  .cards-grid.medium-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+  
+  .cards-grid.large-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+  
+  .cards-grid.extra-large-grid {
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+  }
+  
+  .record-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .record-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .prize-info{
+    width: 110px;
+    height: 110px;
+  }
+
+  .prize-info-card{
+    padding: 10px 8px;
+  }
+
+  .prize-list{
+    padding: 5px 4px;
+  }
+
+  .prize-column{
+    display: none;
+  }
 }
 </style> 
